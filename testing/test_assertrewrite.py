@@ -1758,7 +1758,8 @@ class TestAssertionPass:
         pytester.makeconftest(
             """\
             def pytest_assertion_pass(item, lineno, orig, expl):
-                raise Exception("Assertion Passed: {} {} at line {}".format(orig, expl, lineno))
+                raise Exception("Assertion Passed: {} {} at line {} with expl '{}'".format(
+                    orig, expl, lineno, expl))
             """
         )
 
@@ -1773,6 +1774,9 @@ class TestAssertionPass:
 
                 assert a+b == c+d
 
+            def test_success_with_message():
+                assert 1 == 1, "message explaining this check"
+
             # cover failing assertions with a message
             def test_fails():
                 assert False, "assert with message"
@@ -1780,7 +1784,12 @@ class TestAssertionPass:
         )
         result = pytester.runpytest()
         result.stdout.fnmatch_lines(
-            "*Assertion Passed: a+b == c+d (1 + 2) == (3 + 0) at line 7*"
+            "*Assertion Passed: a+b == c+d (1 + 2) == (3 + 0) at line 7 "
+            "with expl '(1 + 2) == (3 + 0)'*"
+        )
+        result.stdout.fnmatch_lines(
+            "*Assertion Passed: 1 == 1 message explaining this check at line 10 "
+            "with expl 'message explaining this check'*"
         )
 
     def test_hook_call_with_parens(self, pytester: Pytester, flag_on, hook_on) -> None:
