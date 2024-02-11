@@ -912,7 +912,10 @@ class AssertionRewriter(ast.NodeVisitor):
             statements_fail.append(raise_)
 
             # Passed
-            fmt_pass = self.helper("_format_explanation", msg)
+            if assert_.msg:
+                fmt_pass = self.helper("_format_explanation", assertmsg)
+            else:
+                fmt_pass = self.helper("_format_explanation", msg)
             orig = _get_assertion_exprs(self.source)[assert_.lineno]
             hook_call_pass = ast.Expr(
                 self.helper(
